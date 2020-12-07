@@ -1,25 +1,47 @@
-import logo from './logo.svg';
+import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
 import './App.css';
+import { bindActionCreators } from 'redux';
+import getEmployee from './action';
+import Employees from '../src/containers/employees';
+import EmployeesBirthday from '../src/containers/employeesBirthDay';
 
-function App() {
+const App = (props) => {
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const { users } = props;
+
+  useEffect(() => {
+    props.getEmployee();
+  }, []);
+
+  const onUserCheckedHandler = (e, user) => {
+      const findUsers = selectedUsers.find((el) => el.id === user.id);
+
+    if (findUsers) {
+      setSelectedUsers(selectedUsers.filter((el) => el.id !== user.id));
+    } else {
+      setSelectedUsers([...selectedUsers, user]);
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="container">
+      <Employees users={users} onUserChecked={onUserCheckedHandler} />
+      <EmployeesBirthday users={users} selectedUsers={selectedUsers} />
     </div>
   );
+};
+
+function mapStateToProps(state) {
+  return {
+    users: state.users,
+  };
 }
 
-export default App;
+function mapDispatchToProps(dispatch) {
+  return {
+    getEmployee: bindActionCreators(getEmployee, dispatch),
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
